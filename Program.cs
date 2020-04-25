@@ -162,7 +162,14 @@ namespace MovieManager
             Console.WriteLine("0. Exit");
             Console.WriteLine("================================\n");
             Console.Write("Please make a selection (1-2, or 0 to exit): ");
-            return 0;
+            List<int> validUserOptions = new List<int> { 0, 1, 2 };
+            int userOption;
+            while (!Int32.TryParse(Console.ReadLine(), out userOption) || !validUserOptions.Contains(userOption))
+            {
+                Console.WriteLine("Not a valid option!");
+                Console.Write("Please make a selection (1-2, or 0 to exit): ");
+            }
+            return userOption;
         }
 
         private static void StaffMenu()
@@ -214,43 +221,84 @@ namespace MovieManager
 
             return correctUser && correctPass;
         }
-        static void Main(string[] args)
-        {
-            Staff staff = new Staff("staff", "today123");
-            int userOption;
-            // print main menu
-            MainMenu();
 
-            List<int> validUserOptions = new List<int> { 0, 1, 2};
-            while (!Int32.TryParse(Console.ReadLine(), out userOption) || !validUserOptions.Contains(userOption))
+        private static void StaffAddDVD()
+        {
+            int selectedGenre;
+            int selectedClassification;
+            int duration;
+            int year;
+            int copies;
+
+            Console.Write("Enter the movie title: ");
+            string title = Console.ReadLine();
+            Console.Write("Enter the starring actor(s): ");
+            string starring = Console.ReadLine();
+            Console.Write("Enter the director(s): ");
+            string director = Console.ReadLine();
+
+            Dictionary<int, string> genres = new Dictionary<int, string>
             {
-                Console.WriteLine("Not a valid option!");
-                Console.Write("Please make a selection (1-2, or 0 to exit): ");
+                {1, "Drama" }, {2, "Adventure"}, {3, "Family" }, {4, "Action" },
+                {5, "Sci-Fi"}, {6, "Comedy"}, {7, "Thriller"}, {8, "Other"},
+            };
+            Console.WriteLine("Select the genre:");
+            foreach (var pair in genres)
+            {
+                Console.WriteLine("{0}. {1}", pair.Key, pair.Value);
+            }
+            Console.Write("Make selection (1-8): ");
+            while (!Int32.TryParse(Console.ReadLine(), out selectedGenre) || !genres.ContainsKey(selectedGenre))
+            {
+                Console.Write("Make selection (1-8): ");
             }
 
-            // if staff login
-            if (userOption == 1)
+            Dictionary<int, string> classifications = new Dictionary<int, string> { {1, "General (G)" }, {2, "Parental Guidance (PG)"}, {3, "Mature (M15+)" }, {4, "Mature Accompanied (MA15+)" } };
+            Console.WriteLine("Select the classification:");
+            foreach (var pair in classifications)
+            {
+                Console.WriteLine("{0}. {1}", pair.Key, pair.Value);
+            }
+            Console.Write("Make selection (1-4): ");
+            while (!Int32.TryParse(Console.ReadLine(), out selectedClassification) || !classifications.ContainsKey(selectedGenre))
+            {
+                Console.Write("Make selection (1-4): ");
+            }
+            Console.Write("Enter the duration (minutes): ");
+            while (!Int32.TryParse(Console.ReadLine(), out duration)) Console.Write("Enter the duration (minutes): ");
+
+            Console.Write("Enter the release date (year): ");
+            while (!Int32.TryParse(Console.ReadLine(), out year)) Console.Write("Enter the release date (year): ");
+
+            Console.Write("Enter the number of copies available: ");
+            while (!Int32.TryParse(Console.ReadLine(), out copies)) Console.Write("Enter the number of copies available: ");
+            
+        }
+
+        private static void MainMenuOptions(int option)
+        {
+            if (option == 1)
             {
                 // login method
-                bool staffLoggedIn = StaffLogIn(staff);
-
+                bool staffLoggedIn = StaffLogIn(new Staff("staff", "today123"));
                 if (staffLoggedIn)
                 {
                     StaffMenu();
                     int staffOption;
-                    List<int> validStaffOptions = new List<int>{0, 1, 2, 3, 4};
+                    List<int> validStaffOptions = new List<int> { 0, 1, 2, 3, 4 };
                     while (!Int32.TryParse(Console.ReadLine(), out staffOption) || !validStaffOptions.Contains(staffOption))
                     {
                         Console.WriteLine("Not a valid option!");
                         Console.Write("Please make a selection (1-4, or 0 to exit): ");
                     }
-                    switch (staffOption) 
+                    switch (staffOption)
                     {
                         case 0: //return to main menu
-                            Console.WriteLine("You selected 0");
+                            MainMenuOptions(MainMenu());
                             break;
                         case 1: // add a new movie dvd
-                            Console.WriteLine("You selected 1");
+                            Console.WriteLine("(DEBUG) You selected 1");
+                            StaffAddDVD();
                             break;
                         case 2: // remove movie dvd
                             Console.WriteLine("You selected 2");
@@ -265,11 +313,10 @@ namespace MovieManager
                 }
 
             }
-
             // member login
-            else if (userOption == 2)
+            else if (option == 2)
             {
-                Console.Write("Enter username: ");
+                Console.Write("Member Enter username: ");
                 string username = Console.ReadLine();
                 Console.Write("Enter Password: ");
                 string password = Console.ReadLine();
@@ -281,6 +328,17 @@ namespace MovieManager
             {
                 Console.WriteLine("Goodbye!");
             }
+        }
+        
+
+        static void Main(string[] args)
+        {
+            int userOption;
+            // print main menu
+            userOption = MainMenu();
+            MainMenuOptions(userOption);
+
+            
         }
     }
 }
