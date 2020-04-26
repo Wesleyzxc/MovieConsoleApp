@@ -3,120 +3,6 @@ using System.Collections.Generic;
 
 namespace MovieManager
 {
-    public class Movie
-    {
-        private int id;
-        private int timesBorrowed;
-        private string movieTitle;
-        private string director;
-        private string actor;
-        private string genre;
-        private string classification;
-        private int duration;
-        private int year;
-        private int copies; 
-
-        public Movie(string title, string directors, string actors, string genres, string classifications, int time, int releaseYear, int numCopies)
-        {
-            movieTitle = title;
-            director = directors;
-            actor = actors;
-            genre = genres;
-            classification = classifications;
-            duration = time;
-            year = releaseYear;
-            copies = numCopies;
-        }
-        public int GetID() { return id; }
-        public void BorrowItem()
-        {
-            copies -= 1;
-            timesBorrowed += 1;
-        }
-
-        public string GetTitle()
-        {
-            return movieTitle;
-        }
-
-        public void AddCopies(int i ) { copies += i; }
-    }
-
-    public class MovieCollection
-    {
-        private Movie[] movieList = new Movie[10];
-        private int pointer = 0;
-
-        public MovieCollection()
-        {
-
-        }
-
-        public Movie GetMovie(int i)
-        {
-            return movieList[i];
-        }
-
-        public void AddMovie(Movie i)
-        {
-            if (pointer == 10)
-            {
-                Console.WriteLine("FULL!");
-            }
-            else
-            {
-                Console.WriteLine("{0} movie(s) full", i);
-                movieList[pointer] = i;
-                pointer += 1;
-            }
-        }
-
-        public int GetNumMovies()
-        {
-            return pointer;
-        }
-
-        public void RemoveMovie(Movie i)
-        {
-            int key = i.GetID();
-        }
-        public void DisplayInfoMovie()
-        {
-
-        }
-        public void DisplayTop10Borrowed()
-        {
-
-        }
-    }
-
-    public class Member
-    {
-        private string firstName;
-        private string lastName;
-        private string address;
-        private int contactNumber;
-        private int password;
-        private Movie[] holding = new Movie[10];
-        public string UserName { get => lastName+firstName; }
-        public Member(string first, string last, string addy, int num, int pass)
-        {
-            firstName = first;
-            lastName = last;
-            address = addy;
-            contactNumber = num;
-            password = pass;
-        }
-        public string GetFirstName()
-        {
-            return firstName;
-        }
-        public string GetLastName()
-        {
-            return lastName;
-        }
-    }
-
     public class Staff
     {
         private string username;
@@ -135,50 +21,6 @@ namespace MovieManager
             return pass == password;
         }
     }
-
-    public class MemberCollection
-    {
-        private Member[] memberArr = new Member[10];
-        private int pointer = 0;
-        public void RegisterMember(Member member)
-        {
-            if (pointer < 10)
-            {
-                memberArr[pointer] = member;
-                pointer++;
-            }
-        }
-        public Member GetMember(int i)
-        {
-            return memberArr[i];
-        }
-
-        public int GetNumMembers()
-        {
-            return pointer;
-        }
-        public int GetPhoneNumber()
-        {
-            return 0;
-        }
-
-        public void BorrowMovie()
-        {
-
-        }
-
-        public void ReturnMovie()
-        {
-
-        }
-
-        public void ListOfMovies(Member member) 
-        {
-
-        }
-    }
-
-
     class Program
     {
         private static int MainMenu()
@@ -311,9 +153,20 @@ namespace MovieManager
             }
         }
 
-        private static void StaffOption2()
+        private static int StaffOption2(MovieCollection movieList)
         {
-
+            Console.Write("Enter movie title: ");
+            string removeTitle = Console.ReadLine();
+            for (int i = 0; i < movieList.GetNumMovies(); i++)
+            {
+                if (movieList.GetMovie(i).GetTitle() == removeTitle)
+                {
+                    movieList.RemoveMovie(i);
+                    return 0;
+                }
+            }
+            Console.WriteLine("No movies to remove!");
+            return 0;
         }
 
         private static void StaffOption3(MemberCollection members)
@@ -355,6 +208,18 @@ namespace MovieManager
                 members.RegisterMember(new Member(first, last, address, phone, pass));
             }
         }
+
+        private static void StaffOption4(MemberCollection memberList)
+        {
+            Console.Write("Enter member's first name: ");
+            string first = Console.ReadLine();
+            Console.Write("Enter member's last name: ");
+            string last = Console.ReadLine();
+            if (memberList.GetPhoneNumber(first, last) != 0)
+                Console.WriteLine("{0} {1}'s phone number is: {2}", first, last, memberList.GetPhoneNumber(first, last));
+            else
+                Console.WriteLine("User does not exist!");
+        }
         private static void StaffMenuOptions(MovieCollection movieList, MemberCollection memberList)
         {
             StaffMenu();
@@ -365,11 +230,14 @@ namespace MovieManager
                     MainMenuOptions(MainMenu(), movieList, memberList);
                     break;
                 case 1: // add a new movie dvd
+                    Console.WriteLine("(DEBUG) You selected 1");
                     StaffOption1(movieList);
                     StaffMenuOptions(movieList, memberList);
                     break;
                 case 2: // remove movie dvd
-                    Console.WriteLine("You selected 2");
+                    Console.WriteLine("(DEBUG) You selected 2");
+                    StaffOption2(movieList);
+                    StaffMenuOptions(movieList, memberList);
                     break;
                 case 3: // register new member
                     Console.WriteLine("(DEBUG) You selected 3");
@@ -377,7 +245,9 @@ namespace MovieManager
                     StaffMenuOptions(movieList, memberList);
                     break;
                 case 4: // find a registered member's phone number
-                    Console.WriteLine("You selected 4");
+                    Console.WriteLine("(DEBUG) You selected 4");
+                    StaffOption4(memberList);
+                    StaffMenuOptions(movieList, memberList);
                     break;
             }
         }
