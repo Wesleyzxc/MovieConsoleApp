@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using static MovieManager.MovieCollection;
 
 namespace MovieManager
 {
@@ -25,7 +26,7 @@ namespace MovieManager
     {
         private static int MainMenu()
         {
-            Console.WriteLine("Welcome to the Community Library");
+            Console.WriteLine("\nWelcome to the Community Library");
             Console.WriteLine("===========Main Menu============");
             Console.WriteLine("1. Staff Login");
             Console.WriteLine("2. Member Login");
@@ -57,11 +58,11 @@ namespace MovieManager
             Console.WriteLine("4. List current borrowed movie DVDs");
             Console.WriteLine("5. Display top 10 most popular movies");
             Console.WriteLine("0. Return to main menu");
-            Console.WriteLine("================================\n");
+            Console.WriteLine("================================");
             Console.Write("Please make a selection (1-5, or 0 to return to main menu): ");
         }
 
-        private static bool StaffLogIn(Staff staff)
+        private static bool StaffLogin(Staff staff)
         {
             Console.Write("Enter username: ");
             string username = Console.ReadLine();
@@ -86,27 +87,57 @@ namespace MovieManager
             return correctUser && correctPass;
         }
 
-        private static void StaffOption1(MovieCollection movieList)
+        private static string MemberLogin(MovieCollection movieList, MemberCollection memberList)
+        {
+            Console.Write("\nEnter username (LastnameFirstname): ");
+            string username = Console.ReadLine();
+
+            int userID = -1;
+            while (userID < 0)
+            {
+                for (int i = 0; i < memberList.GetNumMembers(); i++)
+                {
+                    if (memberList.GetMember(i).GetUsername() == username)
+                    {
+                        userID = i;
+                        break;
+                    }
+                }
+                if (userID < 0)
+                {
+                    Console.Write("Wrong username! Enter username: ");
+                    username = Console.ReadLine();
+                }
+            }
+            int password = memberList.GetMember(userID).GetPassword();
+            Console.Write("Enter Password: ");
+            string inputPass = Console.ReadLine();
+            while (!Int32.TryParse(inputPass, out int parseInput) || parseInput != password)
+            {
+                Console.Write("Wrong password! Enter password: ");
+                inputPass = Console.ReadLine();
+            }
+            return username;
+        }
+
+        private static void AddMovieStaff1(MovieCollection movieList)
         {
             Console.Write("Enter the movie title: ");
             string title = Console.ReadLine();
 
-            int titleExists = -1;
-            for(int i = 0; i < movieList.GetNumMovies(); i++)
+            Movie checkExist = null;
+            // search only if root is not null
+            if (movieList.root != null)
             {
-                // already exists
-                if (title == movieList.GetMovie(i).GetTitle())
-                {
-                    titleExists = i;
-                    break;
-                }
+                checkExist = movieList.SearchMovie(movieList.root, title);
             }
-            if (titleExists >= 0)
+            // already exists
+            if (checkExist != null)
             {
                 Console.Write("Enter the number of copies you would like to add: ");
                 Int32.TryParse(Console.ReadLine(), out int addCopies);
-                movieList.GetMovie(titleExists).AddCopies(addCopies);
-                Console.WriteLine("Added {0} new copies of {1}\n", addCopies, movieList.GetMovie(titleExists).GetTitle());
+                checkExist.AddCopies(addCopies);
+                Console.WriteLine("Added {0} new copies of {1}\n", addCopies, movieList.SearchMovie(movieList.root, title).GetTitle());
             }
             else
             {
@@ -149,27 +180,32 @@ namespace MovieManager
 
                 Movie newMovie = new Movie
                     (title, director, starring, genres[selectedGenre], classifications[selectedClassification], duration, year, copies);
-                movieList.AddMovie(newMovie);
+                movieList.Insert(newMovie);
             }
         }
 
-        private static int StaffOption2(MovieCollection movieList)
+        private static void RemoveMovieStaff2(MovieCollection movieList, MemberCollection memberList)
         {
             Console.Write("Enter movie title: ");
             string removeTitle = Console.ReadLine();
-            for (int i = 0; i < movieList.GetNumMovies(); i++)
+            Movie checkExist = null;
+
+            // search only if root is not null
+            if (movieList.root != null)
+                checkExist = movieList.SearchMovie(movieList.root, removeTitle);
+
+            if (checkExist != null)
             {
-                if (movieList.GetMovie(i).GetTitle() == removeTitle)
-                {
-                    movieList.RemoveMovie(i);
-                    return 0;
-                }
+                for (int i = 0; i < memberList.GetNumMembers(); i++)
+                    memberList.GetMember(i).ReturnDVD(checkExist);
+                movieList.Remove(checkExist);
+                Console.WriteLine("You removed {0}\n", checkExist.GetTitle());
             }
-            Console.WriteLine("No movies to remove!");
-            return 0;
+            else
+                Console.WriteLine("No movies to remove!");
         }
 
-        private static void StaffOption3(MemberCollection members)
+        private static void AddMemberStaff3(MemberCollection members)
         {
             Console.Write("Enter member's first name: ");
             string first = Console.ReadLine();
@@ -209,7 +245,7 @@ namespace MovieManager
             }
         }
 
-        private static void StaffOption4(MemberCollection memberList)
+        private static void MemberContactStaff4(MemberCollection memberList)
         {
             Console.Write("Enter member's first name: ");
             string first = Console.ReadLine();
@@ -231,68 +267,163 @@ namespace MovieManager
                     break;
                 case 1: // add a new movie dvd
                     Console.WriteLine("(DEBUG) You selected 1");
-                    StaffOption1(movieList);
+                    AddMovieStaff1(movieList);
                     StaffMenuOptions(movieList, memberList);
                     break;
                 case 2: // remove movie dvd
                     Console.WriteLine("(DEBUG) You selected 2");
-                    StaffOption2(movieList);
+                    RemoveMovieStaff2(movieList, memberList);
                     StaffMenuOptions(movieList, memberList);
                     break;
                 case 3: // register new member
                     Console.WriteLine("(DEBUG) You selected 3");
-                    StaffOption3(memberList);
+                    AddMemberStaff3(memberList);
                     StaffMenuOptions(movieList, memberList);
                     break;
                 case 4: // find a registered member's phone number
                     Console.WriteLine("(DEBUG) You selected 4");
-                    StaffOption4(memberList);
+                    MemberContactStaff4(memberList);
                     StaffMenuOptions(movieList, memberList);
                     break;
             }
         }
 
-        private static void MainMenuOptions(int option, MovieCollection movieList, MemberCollection memberList)
+        private static void DisplayAllDVDMember1(MovieCollection movieList)
         {
-            if (option == 1)
+            movieList.DisplayAllMovies(movieList.root);
+        }
+        private static void BorrowDVDMember2(MovieCollection movieList, Member member)
+        {
+            Console.Write("Enter movie title: ");
+            string borrowTitle = Console.ReadLine();
+            Movie toBeBorrowed = movieList.SearchMovie(movieList.root, borrowTitle);
+            if (toBeBorrowed != null && toBeBorrowed.GetCopies() != 0)
             {
-                // login method
-                bool staffLoggedIn = StaffLogIn(new Staff("staff", "today123"));
-                if (staffLoggedIn)
-                {
-                    StaffMenuOptions(movieList, memberList);
-                }
-
+                toBeBorrowed.BorrowItem();
+                member.RentDVD(toBeBorrowed);
+                Console.WriteLine("You borrowed {0}\n", toBeBorrowed.GetTitle());
             }
-            // member login
-            else if (option == 2)
+            else
+                Console.WriteLine("Cannot borrow movie!\n");
+        }
+        private static void ReturnDVDMember3(MovieCollection movieList, Member member)
+        {
+            Console.Write("Enter movie title: ");
+            string returnTitle = Console.ReadLine();
+            Movie toBeReturned = movieList.SearchMovie(movieList.root, returnTitle);
+            if (toBeReturned != null)
             {
-                Console.Write("Member Enter username: ");
-                string username = Console.ReadLine();
-                Console.Write("Enter Password: ");
-                string password = Console.ReadLine();
+                toBeReturned.ReturnItem();
+                member.ReturnDVD(toBeReturned);
+                Console.WriteLine("You returned {0}\n", toBeReturned.GetTitle());
             }
+            else
+                Console.WriteLine("Cannot return movie!\n");
 
-
-            // user press 0 to exit
+        }
+        private static void ListBorrowedMember4(Member member)
+        {
+            Movie[] holding = member.GetHolding();
+            if (holding[0] == null)
+                Console.WriteLine("You have not borrowed anything.\n");
             else
             {
-                Console.WriteLine("Goodbye!");
+                Console.WriteLine("You are currently borrowing: ");
+                for (int i = 0; i < member.GetNumHolding(); i++)
+                {
+                    Console.WriteLine(holding[i].GetTitle());
+                }
+                Console.WriteLine("\n\n");
+            }
+        }
+        private static void DisplayTop10Member5(MovieCollection movieList)
+        {
+            movieList.DisplayTop10Borrowed();
+            Console.WriteLine();
+        }
+        private static void MemberMenuOptions(MovieCollection movieList, MemberCollection memberList, string user)
+        {
+            Member loggedInUser = memberList.GetMember(user);
+            MemberMenu();
+            Int32.TryParse(Console.ReadLine(), out int memberOption);
+            switch(memberOption)
+            {
+                case 1: // display all dvds
+                    DisplayAllDVDMember1(movieList);
+                    MemberMenuOptions(movieList, memberList, user);
+                    break;
+                case 2: // borrow a dvd
+                    BorrowDVDMember2(movieList, loggedInUser);
+                    MemberMenuOptions(movieList, memberList, user);
+                    break;
+                case 3: // return a dvd
+                    ReturnDVDMember3(movieList, loggedInUser);
+                    MemberMenuOptions(movieList, memberList, user);
+                    break;
+                case 4: // list current borrowed dvd
+                    ListBorrowedMember4(loggedInUser);
+                    MemberMenuOptions(movieList, memberList, user);
+                    break;
+                case 5: // display top 10 most popular dvd
+                    DisplayTop10Member5(movieList);
+                    MemberMenuOptions(movieList, memberList, user);
+                    break;
+                case 0: // return main menu
+                    MainMenuOptions(MainMenu(), movieList, memberList);
+                    break;
+            }
+
+        }
+
+        private static void MainMenuOptions(int option, MovieCollection movieList, MemberCollection memberList)
+        {
+            switch (option) {
+                case 1:
+                    // login method
+                    bool staffLoggedIn = StaffLogin(new Staff("staff", "today123"));
+                    if (staffLoggedIn)
+                        StaffMenuOptions(movieList, memberList);
+                    break;
+                // member login
+                case 2:
+                    if (memberList.GetNumMembers() > 0)
+                    {
+                        string user = MemberLogin(movieList, memberList);
+                        MemberMenuOptions(movieList, memberList, user);
+                    }
+                    else
+                    {
+                        Console.WriteLine("No members registered!");
+                        MainMenuOptions(MainMenu(), movieList, memberList);
+                    }
+                    break;
+
+                default:
+                    // user press 0 to exit
+                    Console.WriteLine("Goodbye!");
+                    break;
             }
         }
         
-
         static void Main(string[] args)
         {
             MovieCollection movieCollection = new MovieCollection();
             MemberCollection memberCollection = new MemberCollection();
 
+            // DEBUG BLOCK
+            movieCollection.Insert(new Movie("hi", "abc", "abc", "Test", "test", 1, 1, 5));
+            movieCollection.Insert(new Movie("zi", "abc", "abc", "Test", "test", 1, 1, 5));
+            movieCollection.Insert(new Movie("gi", "abc", "abc", "Test", "test", 1, 1, 5));
+            movieCollection.Insert(new Movie("ci", "abc", "abc", "Test", "test", 1, 1, 5));
+            memberCollection.RegisterMember(new Member("mike", "chen", "1 way", 123123, 1111));
+            memberCollection.RegisterMember(new Member("lee", "lee", "1 way", 123123, 1111));
+
+            // END DEBUG BLOCK
+
             int userOption;
             // print main menu
             userOption = MainMenu();
             MainMenuOptions(userOption, movieCollection , memberCollection);
-
-            
         }
     }
 }

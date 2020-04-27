@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MovieManager
+﻿namespace MovieManager
 {
     public class Member
     {
@@ -12,7 +8,7 @@ namespace MovieManager
         private int contactNumber;
         private int password;
         private Movie[] holding = new Movie[10];
-        public string UserName { get => lastName + firstName; }
+        private int holdingPointer = 0;
         public Member(string first, string last, string addy, int num, int pass)
         {
             firstName = first;
@@ -28,6 +24,44 @@ namespace MovieManager
         public string GetLastName()
         {
             return lastName;
+        }
+        public string GetUsername()
+        {
+            return (lastName + firstName);
+        }
+        public int GetPassword()
+        {
+            return password;
+        }
+        public int GetNumHolding()
+        {
+            return holdingPointer;
+        }
+        public void RentDVD(Movie rented)
+        {
+            holding[holdingPointer] = rented;
+            holdingPointer++;
+        }
+        public void ReturnDVD(Movie returning)
+        {
+            for (int i = 0; i< holdingPointer; i++)
+            {
+                if (holding[i] == returning)
+                {
+                    for (int moveDown = i; moveDown < holdingPointer; moveDown++)
+                    {
+                        holding[moveDown] = holding[moveDown + 1];
+                        holding[moveDown + 1] = null;
+                    }
+                    holdingPointer--;
+                    break;
+                }
+            }
+            
+        }
+        public Movie[] GetHolding()
+        {
+            return holding;
         }
         public int GetNumber()
         {

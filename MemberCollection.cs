@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MovieManager
+﻿namespace MovieManager
 {
     public class MemberCollection
     {
@@ -19,6 +15,15 @@ namespace MovieManager
         public Member GetMember(int i)
         {
             return memberArr[i];
+        }
+        public Member GetMember(string user)
+        {
+            for (int i = 0; i< pointer; i++)
+            {
+                if (memberArr[i].GetUsername() == user)
+                    return memberArr[i];
+            }
+            return null;
         }
 
         public int GetNumMembers()
