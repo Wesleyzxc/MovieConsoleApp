@@ -29,11 +29,10 @@ namespace MovieManager
             root = null;
         }
 
-        // new node precedes current node (new node goes left)
-        //if (key.GetTitle().CompareTo(root.Data.GetTitle()) < 0)
         public void Insert(Movie i)
         {
             root = InsertRec(root, i);
+            numMovies++;
         }
 
         Node InsertRec(Node root, Movie key)
@@ -46,17 +45,20 @@ namespace MovieManager
             }
 
             // Otherwise, recur down the tree 
+            // new node precedes current node (new node goes left)
             if (key.GetTitle().CompareTo(root.Data.GetTitle()) < 0)
                 root.Left = InsertRec(root.Left, key);
+            // new node succeeds current node (new node goes right)
             else if (key.GetTitle().CompareTo(root.Data.GetTitle()) > 0)
                 root.Right = InsertRec(root.Right, key);
-            // return the (unchanged) node pointer
-            numMovies++;
+            
+            // return the node pointer
             return root;
         }
         public void Remove(Movie key)
         {
             root = DeleteRec(root, key);
+            numMovies--;
         }
 
         Node DeleteRec(Node root, Movie key)
@@ -65,8 +67,10 @@ namespace MovieManager
             if (root == null) return root;
 
             // Otherwise, recur down the tree
+            // new node precedes current node (new node goes left)
             if (key.GetTitle().CompareTo(root.Data.GetTitle()) < 0)
                 root.Left = DeleteRec(root.Left, key);
+            // new node succeeds current node (new node goes right)
             else if (key.GetTitle().CompareTo(root.Data.GetTitle()) > 0)
                 root.Right = DeleteRec(root.Right, key);
 
@@ -85,7 +89,6 @@ namespace MovieManager
                 // Delete the inorder successor  
                 root.Right = DeleteRec(root.Right, root.Data);
             }
-            numMovies--;
             return root;
         }
 
@@ -129,41 +132,75 @@ namespace MovieManager
                 Console.WriteLine("No movies added yet!");
             if (node != null)
             {
-                // in order traversal (in alphabetical order)
+                // in order traversal so left first then current node then right(in alphabetical order)
                 DisplayAllMovies(node.Left);
                 node.DisplayNode();
                 Console.WriteLine();
                 DisplayAllMovies(node.Right);
             }
         }
+        private int ExtractNode(Node node, Movie[] results, int index)
+        {
+            if (root == null)
+                Console.WriteLine("No movies added yet!");
+
+            if (node != null)
+            {
+                index = ExtractNode(node.Left, results, index);
+                results[index] = node.Data;
+                index++;
+                index = ExtractNode(node.Right, results, index);
+            }
+            
+
+            return index;
+        }
         public void DisplayTop10Borrowed()
         {
-            // LIMIT TO 10
-            int size = 10;
-            Movie[] results = new Movie[size];
-            extractValues(root, results, 0);
-            var sorted = results.Where(result => result != null).OrderByDescending(result => result.GetTimesBorrowed());
-            foreach (var rankMovie in sorted)
-            {
-                Console.WriteLine("{0} has been borrowed: {1} times", rankMovie.GetTitle(), rankMovie.GetTimesBorrowed());
-            }
+            Movie[] results = new Movie[GetNumMovies()];
+            ExtractNode(root, results, 0);
+            QuickSort(results, 0, GetNumMovies() - 1);
+            int loopCount = GetNumMovies() > 10 ? 10 : GetNumMovies();
+            for (int i = 0; i < loopCount; i++) // only show top 10
+                Console.WriteLine("{0} has been borrowed: {1} times", results[i].GetTitle(), results[i].GetTimesBorrowed());
+
+            
         }
-
-        private int extractValues(Node node, Movie[] results, int index)
+        private int Partition(Movie[] arr, int start, int end)
         {
-            if (node.Left != null)
+            Movie temp;
+            Movie pivot = arr[end];
+            int i = start - 1;
+            for (int leftBound = start; leftBound < end ; leftBound++)
             {
-                index = extractValues(node.Left, results, index);
+                // if current movie is more popular than pivot
+                if (arr[leftBound].GetTimesBorrowed() > pivot.GetTimesBorrowed())
+                {
+                    i++;
+                    temp = arr[i];
+                    // swaps arr[i] and arr[leftBound]
+                    arr[i] = arr[leftBound];
+                    arr[leftBound] = temp;
+                }
             }
 
-            if (node.Right != null)
-            {
-                index = extractValues(node.Right, results, index);
+            if (arr[i + 1].GetTimesBorrowed() != arr[end].GetTimesBorrowed())
+            { // only swap the first and last if there is a difference
+                temp = arr[i + 1];
+                arr[i + 1] = arr[end];
+                arr[end] = temp;
             }
-
-            results[index] = node.Data;
-
-            return index + 1;
+            return i + 1;
+        }
+        private void QuickSort(Movie[] arr, int start, int end)
+        {
+            int i;
+            if (start < end)
+            {
+                i = Partition(arr, start, end);
+                QuickSort(arr, start, i - 1);
+                QuickSort(arr, i + 1, end);
+            }
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using static MovieManager.MovieCollection;
 
 namespace MovieManager
 {
@@ -83,7 +82,6 @@ namespace MovieManager
                 password = Console.ReadLine();
                 correctPass = staff.checkPass(password);
             }
-
             return correctUser && correctPass;
         }
 
@@ -199,7 +197,7 @@ namespace MovieManager
                 for (int i = 0; i < memberList.GetNumMembers(); i++)
                     memberList.GetMember(i).ReturnDVD(checkExist);
                 movieList.Remove(checkExist);
-                Console.WriteLine("You removed {0}\n", checkExist.GetTitle());
+                Console.WriteLine("You removed {0}", checkExist.GetTitle());
             }
             else
                 Console.WriteLine("No movies to remove!");
@@ -266,22 +264,18 @@ namespace MovieManager
                     MainMenuOptions(MainMenu(), movieList, memberList);
                     break;
                 case 1: // add a new movie dvd
-                    Console.WriteLine("(DEBUG) You selected 1");
                     AddMovieStaff1(movieList);
                     StaffMenuOptions(movieList, memberList);
                     break;
                 case 2: // remove movie dvd
-                    Console.WriteLine("(DEBUG) You selected 2");
                     RemoveMovieStaff2(movieList, memberList);
                     StaffMenuOptions(movieList, memberList);
                     break;
                 case 3: // register new member
-                    Console.WriteLine("(DEBUG) You selected 3");
                     AddMemberStaff3(memberList);
                     StaffMenuOptions(movieList, memberList);
                     break;
                 case 4: // find a registered member's phone number
-                    Console.WriteLine("(DEBUG) You selected 4");
                     MemberContactStaff4(memberList);
                     StaffMenuOptions(movieList, memberList);
                     break;
@@ -409,16 +403,6 @@ namespace MovieManager
         {
             MovieCollection movieCollection = new MovieCollection();
             MemberCollection memberCollection = new MemberCollection();
-
-            // DEBUG BLOCK
-            movieCollection.Insert(new Movie("hi", "abc", "abc", "Test", "test", 1, 1, 5));
-            movieCollection.Insert(new Movie("zi", "abc", "abc", "Test", "test", 1, 1, 5));
-            movieCollection.Insert(new Movie("gi", "abc", "abc", "Test", "test", 1, 1, 5));
-            movieCollection.Insert(new Movie("ci", "abc", "abc", "Test", "test", 1, 1, 5));
-            memberCollection.RegisterMember(new Member("mike", "chen", "1 way", 123123, 1111));
-            memberCollection.RegisterMember(new Member("lee", "lee", "1 way", 123123, 1111));
-
-            // END DEBUG BLOCK
 
             int userOption;
             // print main menu

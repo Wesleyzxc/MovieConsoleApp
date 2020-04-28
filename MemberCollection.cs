@@ -42,20 +42,5 @@
             }
             return 0;
         }
-
-        public void BorrowMovie()
-        {
-
-        }
-
-        public void ReturnMovie()
-        {
-
-        }
-
-        public void ListOfMovies(Member member)
-        {
-
-        }
     }
 }
